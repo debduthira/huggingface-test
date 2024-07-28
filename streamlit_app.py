@@ -1,6 +1,30 @@
-import streamlit as st
+from huggingface_hub import InferenceClient
 
-st.title("🎈 My new app")
-st.write(
-    "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
+import json
+
+
+repo_id = "google-t5/t5-small"
+
+
+llm_client = InferenceClient(
+    model=repo_id,
+    timeout=120,
 )
+
+
+def call_llm(inference_client: InferenceClient, prompt: str):
+
+    response = inference_client.post(
+        json={
+            "inputs": prompt,
+            "parameters": {"max_new_tokens": 200},
+            "task": "text-generation",
+        },
+    )
+
+    return json.loads(response.decode())[0]["generated_text"]
+
+
+response = call_llm(llm_client, "write me a crazy joke")
+
+print(response)
